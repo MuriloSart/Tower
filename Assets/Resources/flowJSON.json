@@ -1,0 +1,30 @@
+[
+  {
+    "type": "DUNGEON_ENTRANCE",
+    "connections": [ "NORMAL" ]
+  },
+  {
+    "type": "NORMAL",
+    "connections": [ "HUB", "NORMAL" ]
+  },
+  {
+    "type": "HUB",
+    "connections": []
+  },
+  {
+    "type": "REWARD",
+    "connections": [ "NORMAL" ]
+  },
+  {
+    "type": "BOSS_FOYER",
+    "connections": [ "BOSS" ]
+  },
+  {
+    "type": "BOSS",
+    "connections": [ "EXIT" ]
+  },
+  {
+    "type": "EXIT",
+    "connections": []
+  }
+]
