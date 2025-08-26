@@ -21,7 +21,7 @@ public class GraphManager : MonoBehaviour
     [Range(0.001f, 0.01f)]
     public float epsilon = 0.001f;
     [Space]
-    public ProceduralMap proceduralMap;
+    public ProceduralRoom proceduralRoom;
 
 
     private Graph graph = new Graph();
@@ -50,13 +50,12 @@ public class GraphManager : MonoBehaviour
         GenerateEdges();
         DrawMST();
 
-        // Rebuild centers from final transforms:
         roomPositions.Clear();
         foreach (var n in graph.Nodes)
             roomPositions.Add(n.transform.position);
 
-        if (proceduralMap != null)
-            proceduralMap.Build(roomPositions, corridorsPoints);
+        if (proceduralRoom != null)
+            foreach(var c in roomPositions) proceduralRoom.Build(c);
         else
             Debug.LogWarning("[GraphManager] ProceduralMap não atribuído no Inspector.");
     }
