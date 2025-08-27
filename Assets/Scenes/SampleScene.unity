@@ -405,8 +405,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ddf8eef75ddf744c910b4ee49017b75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wallMesh: {fileID: 4300000, guid: 657987f19f0767d4f81541198f8e3eff, type: 3}
-  wallMaterial: {fileID: 2100000, guid: 18f63ff904099034daf971dac5b32582, type: 2}
+  wallMesh: {fileID: 4493585093827132993, guid: 3d65dc4bf10a7b44eb8bff69170420ea, type: 3}
+  wallMaterial: {fileID: -6478536213147159724, guid: 3d65dc4bf10a7b44eb8bff69170420ea, type: 3}
   floorMesh: {fileID: 2554765806763607274, guid: cf5871f681d5a5448aa6bcfed8daf3ad, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
