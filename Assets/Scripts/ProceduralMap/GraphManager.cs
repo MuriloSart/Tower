@@ -4,11 +4,16 @@ using UnityEngine;
 
 public class GraphManager : MonoBehaviour
 {
+    [Header("Rooms Configuration")]
     public GameObject roomPrefab;
     public int numberOfRooms = 10;
-    public float mapSize = 10f;
+    public float mapWeight = 10f;
     public float minDistanceBetweenRooms = 2f;
     public float maxNeighborDistance = 15f;
+    public int numberOfFloors = 4;
+
+    private float floorsHeight = 25;
+    private List<float> floorsPositions;
 
     [Header("Overlap Solver")]
     [Tooltip("Maximum number of iterations for the overlap solver")]
@@ -20,8 +25,11 @@ public class GraphManager : MonoBehaviour
     [Tooltip("Tolerance margin to consider 'no overlap' and avoid jitter")]
     [Range(0.001f, 0.01f)]
     public float epsilon = 0.001f;
+
     [Space]
-    public ProceduralRoom proceduralRoom;
+
+    [SerializeField]
+    private ProceduralRoom proceduralRoom;
 
 
     private Graph graph = new Graph();
@@ -38,10 +46,12 @@ public class GraphManager : MonoBehaviour
     {
         roomPositions = new List<Vector3>();
         corridorsPoints = new List<(Vector3 a, Vector3 b)>();
+        floorsPositions = new();
     }
 
     void Start()
     {
+        Random.InitState(System.DateTime.Now.Millisecond);
         maxNeighborDistance = Mathf.Max(maxNeighborDistance, minDistanceBetweenRooms);
 
         GenerateRooms();
@@ -55,24 +65,46 @@ public class GraphManager : MonoBehaviour
             roomPositions.Add(n.transform.position);
 
         if (proceduralRoom != null)
-            foreach(var c in roomPositions) proceduralRoom.Build(c);
+        {
+            foreach (var c in roomPositions)
+            {
+                proceduralRoom.Build(c);
+            }
+        }
         else
             Debug.LogWarning("[GraphManager] ProceduralMap não atribuído no Inspector.");
+
+        for (int i = 0; i < numberOfFloors; i++)
+        {
+            floorsPositions.Add(floorsHeight * i);
+        }
     }
 
+    private void LateUpdate()
+    {
+        foreach(var edge in DrawMST())
+        {
+            Debug.DrawLine(edge.From.transform.position, edge.To.transform.position, Color.yellow, 5f);
+        }
+    }
 
     /// <summary>
     /// Defines the layout in which the rooms (nodes) will be arranged within the graph.
     /// </summary>
     public virtual void GenerateRooms()
     {
-        Random.InitState(System.DateTime.Now.Millisecond);
+
+        for (int i = 0; i < numberOfFloors; i++)
+        {
+            floorsPositions.Add(floorsHeight * i);
+        }
+
         for (int i = 0; i < numberOfRooms; i++)
         {
             var pos = new Vector3(
-                Random.Range(-mapSize, mapSize),
-                0f,
-                Random.Range(-mapSize, mapSize)
+                Random.Range(-mapWeight, mapWeight),
+                floorsPositions[Random.Range(0, floorsPositions.Count - 1)],
+                Random.Range(-mapWeight, mapWeight) 
             );
 
             GameObject roomGO = Instantiate(roomPrefab, pos, Quaternion.identity, this.transform);
@@ -232,7 +264,7 @@ public class GraphManager : MonoBehaviour
             }
         }
     }
-    private void DrawMST()
+    private List<Edge> DrawMST()
     {
         corridorsPoints.Clear();
 
@@ -242,8 +274,8 @@ public class GraphManager : MonoBehaviour
         foreach (var edge in mst)
         {
             corridorsPoints.Add((edge.From.transform.position, edge.To.transform.position));
-            Debug.DrawLine(edge.From.transform.position, edge.To.transform.position, Color.yellow, 5f);
         }
-    }
 
+        return mst;
+    }
 }

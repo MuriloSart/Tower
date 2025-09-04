@@ -1,26 +1,31 @@
+Ôªøusing System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ProceduralRoom : MonoBehaviour
 {
     [Header("Geometry")]
-    public Mesh wallMesh;
-    public Material wallMaterial;
+    [Tooltip("Modules of the Room Wall: First One will be ever the normal wall and will be the mesh most instanced")]
+    public List<Wall> wallModules;
+
+    [Header("Floor")]
     public GameObject floorMesh;
 
+    private readonly List<List<List<Matrix4x4>>> _batches = new();
 
-    private readonly List<Matrix4x4> _matrices = new();
-    private readonly List<List<Matrix4x4>> _batches = new();
-
-    private Vector3 _wallSize;
+    private Vector3 _moduleSize;
     private Vector2 _roomSize;
 
     void Awake()
     {
-        if (!wallMesh) { Debug.LogError("[ProceduralRoom] wallMesh n„o setado."); enabled = false; return; }
-        _wallSize = wallMesh.bounds.size;
+        _moduleSize = wallModules[0].mesh.bounds.size;
 
-        if (!floorMesh) { Debug.LogError("[ProceduralRoom] floorMesh n„o setado."); enabled = false; return; }
+        for (int index = 0; index < wallModules.Count; index++)
+        {
+            _batches.Add(new List<List<Matrix4x4>>());
+        }
+
+
         var rend = floorMesh.GetComponent<Renderer>();
         if (rend)
         {
@@ -30,31 +35,32 @@ public class ProceduralRoom : MonoBehaviour
         else
         {
             var mf = floorMesh.GetComponent<MeshFilter>();
+
             if (!mf) { Debug.LogError("[ProceduralRoom] floorMesh sem Renderer/MeshFilter."); enabled = false; return; }
+
             Vector3 local = mf.sharedMesh.bounds.size;
             Vector3 sc = floorMesh.transform.lossyScale;
+
             _roomSize = new Vector2(local.x * sc.x, local.z * sc.z);
         }
 
-        if (!wallMaterial) { Debug.LogError("[ProceduralRoom] wallMaterial n„o setado."); enabled = false; return; }
-        wallMaterial.enableInstancing = true;
-        if (!wallMaterial.enableInstancing) { Debug.LogError("[ProceduralRoom] Material/Shader sem GPU Instancing."); enabled = false; return; }
+        foreach (var module in wallModules) module.material.enableInstancing = true;
     }
 
     public void Build(Vector3 roomCenter)
     {
-        _matrices.Clear();
-        _batches.Clear();
-
         AddRoomPerimeter(roomCenter, _roomSize);
-        SplitIntoBatches(_matrices, 1023, _batches);
+        foreach (var module in wallModules)
+        {
+            SplitIntoBatches(module.matrices, 1023, _batches[wallModules.IndexOf(module)]);
+        }
     }
 
-    void LateUpdate()
+    private void OnRenderObject()
     {
-        if (_batches.Count == 0) return;
-        foreach (var batch in _batches)
-            Graphics.DrawMeshInstanced(wallMesh, 0, wallMaterial, batch);
+        foreach(List<List<Matrix4x4>> batchList in _batches)
+            foreach(List<Matrix4x4> batch in batchList)
+                Graphics.DrawMeshInstanced(wallModules[_batches.IndexOf(batchList)].mesh, 0, wallModules[_batches.IndexOf(batchList)].material, batch);
     }
 
     void AddRoomPerimeter(Vector3 center, Vector2 sizeXZ)
@@ -68,7 +74,7 @@ public class ProceduralRoom : MonoBehaviour
 
         AddWallSegment(center + new Vector3(-halfX, 0, -halfZ),
                        center + new Vector3(+halfX, 0, -halfZ),
-                       center); // tr·s
+                       center); // tr√°s
 
         AddWallSegment(center + new Vector3(-halfX, 0, -halfZ),
                        center + new Vector3(-halfX, 0, +halfZ),
@@ -79,7 +85,7 @@ public class ProceduralRoom : MonoBehaviour
                        center); // direita
     }
 
-    void AddWallSegment(Vector3 a, Vector3 b, Vector3 interiorHint)
+    private void AddWallSegment(Vector3 a, Vector3 b, Vector3 interiorHint)
     {
         Vector3 delta = b - a;
         float vectorLenght = delta.magnitude;
@@ -96,40 +102,51 @@ public class ProceduralRoom : MonoBehaviour
 
         Quaternion rot = Quaternion.AngleAxis(rotationAdjust, Vector3.up) * Quaternion.LookRotation(L, Vector3.up);
 
-        float wallLenght = _wallSize.x;
+        float wallLenght = _moduleSize.x;
 
-        int full = Mathf.FloorToInt(vectorLenght / wallLenght);
-        float rest = vectorLenght - full * wallLenght;
+        float quantity = Mathf.Round(vectorLenght / wallLenght);
+        float rest = vectorLenght - quantity * wallLenght;
+
+        float targetProporcionalSize = vectorLenght / quantity;
+
+        targetProporcionalSize = targetProporcionalSize / wallLenght;
 
         float cursor = 0f;
-        for (int i = 0; i < full; i++)
+        for (int i = 0; i < quantity; i++)
         {
-            float along = cursor + wallLenght * 0.5f;
+            float along = cursor + wallLenght * targetProporcionalSize * 0.5f;
             Vector3 cpos = a + L * along;
 
-            _matrices.Add(Matrix4x4.TRS(
+            Matrix4x4 transformMatrix = Matrix4x4.TRS(
                 new Vector3(cpos.x, a.y, cpos.z),
                 rot,
-                Vector3.one
-            ));
+                new Vector3(targetProporcionalSize, 1, 1)
+            );
 
-            cursor += wallLenght;
+            AddInstance(transformMatrix);
+
+            cursor += (wallLenght * targetProporcionalSize);
         }
+    }
 
-        if (rest > 1e-3f)
+    private void AddInstance(Matrix4x4 transformMatrix)
+    {
+        int totalWeight = 0;
+        foreach (var module in wallModules)
+            totalWeight += module.weight;
+
+        totalWeight = Mathf.Max(0, totalWeight);
+        int pick = UnityEngine.Random.Range(0, totalWeight);
+
+        int count = 0;
+        foreach (var module in wallModules)
         {
-            float partial = rest / wallLenght;
-            float along = cursor + rest * 0.5f;
-            Vector3 cpos = a + L * along;
-
-            Vector3 scale = Vector3.one;
-            scale.x = partial;
-
-            _matrices.Add(Matrix4x4.TRS(
-                new Vector3(cpos.x, a.y, cpos.z),
-                rot,
-                scale
-            ));
+            count += module.weight;
+            if (count > pick)
+            {
+                module.matrices.Add(transformMatrix);
+                break;
+            }
         }
     }
 
@@ -144,4 +161,15 @@ public class ProceduralRoom : MonoBehaviour
             dst.Add(slice);
         }
     }
+}
+
+[Serializable]
+public class Wall
+{
+    public Mesh mesh;
+    public Material material;
+    public int weight = 1;
+
+    [HideInInspector] public List<Matrix4x4> matrices;
+
 }
