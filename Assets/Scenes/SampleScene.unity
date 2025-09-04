@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 86627331}
   - component: {fileID: 86627330}
+  - component: {fileID: 86627332}
   m_Layer: 0
   m_Name: GraphManager
   m_TagString: Untagged
@@ -157,7 +158,6 @@ MonoBehaviour:
   maxRelaxIterations: 40
   separationStrength: 0.5
   epsilon: 0.001
-  proceduralRoom: {fileID: 2026935614}
 --- !u!4 &86627331
 Transform:
   m_ObjectHideFlags: 0
@@ -173,6 +173,32 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &86627332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 86627329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ddf8eef75ddf744c910b4ee49017b75, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wallModules:
+  - mesh: {fileID: 4493585093827132993, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
+    material: {fileID: -3846018093981099296, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
+    weight: 2
+    matrices: []
+  - mesh: {fileID: -1550514412580984892, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
+    material: {fileID: -3846018093981099296, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
+    weight: 1
+    matrices: []
+  - mesh: {fileID: -8678823145569952518, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
+    material: {fileID: -3846018093981099296, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
+    weight: 1
+    matrices: []
+  floorMesh: {fileID: 2554765806763607274, guid: cf5871f681d5a5448aa6bcfed8daf3ad, type: 3}
 --- !u!1 &225050185
 GameObject:
   m_ObjectHideFlags: 0
@@ -362,64 +388,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!1 &2026935612
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2026935613}
-  - component: {fileID: 2026935614}
-  m_Layer: 0
-  m_Name: ProceduralRoom
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2026935613
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2026935612}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.89127, y: 0, z: 7.84671}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2026935614
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2026935612}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0ddf8eef75ddf744c910b4ee49017b75, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  wallModules:
-  - mesh: {fileID: 4493585093827132993, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
-    material: {fileID: -3846018093981099296, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
-    weight: 2
-    matrices: []
-  - mesh: {fileID: -1550514412580984892, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
-    material: {fileID: -3846018093981099296, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
-    weight: 1
-    matrices: []
-  - mesh: {fileID: -8678823145569952518, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
-    material: {fileID: -3846018093981099296, guid: 0318c6c342b76aa4fba26ee32c078ea3, type: 3}
-    weight: 1
-    matrices: []
-  floorMesh: {fileID: 2554765806763607274, guid: cf5871f681d5a5448aa6bcfed8daf3ad, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -427,4 +395,3 @@ SceneRoots:
   - {fileID: 225050188}
   - {fileID: 410087041}
   - {fileID: 86627331}
-  - {fileID: 2026935613}

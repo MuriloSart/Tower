@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
-public class GraphManager : MonoBehaviour
+public class GraphManager : Singleton<GraphManager>
 {
     [Header("Rooms Configuration")]
     public GameObject roomPrefab;
@@ -26,14 +27,9 @@ public class GraphManager : MonoBehaviour
     [Range(0.001f, 0.01f)]
     public float epsilon = 0.001f;
 
-    [Space]
-
-    [SerializeField]
-    private ProceduralRoom proceduralRoom;
-
+    public List<Vector3> roomPositions { get; private set; }
 
     private Graph graph = new Graph();
-    private List<Vector3> roomPositions;
     private List<(Vector3 a, Vector3 b)> corridorsPoints;
 
     void OnValidate()
@@ -42,11 +38,15 @@ public class GraphManager : MonoBehaviour
         separationStrength = Mathf.Clamp01(separationStrength);
     }
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         roomPositions = new List<Vector3>();
         corridorsPoints = new List<(Vector3 a, Vector3 b)>();
         floorsPositions = new();
+
+        if (!GetComponent<ProceduralScheme>())
+            this.gameObject.AddComponent<ProceduralScheme>();
     }
 
     void Start()
@@ -61,22 +61,12 @@ public class GraphManager : MonoBehaviour
         DrawMST();
 
         roomPositions.Clear();
+
+        var buildRooms = GetComponent<ProceduralScheme>();
         foreach (var n in graph.Nodes)
+        {
             roomPositions.Add(n.transform.position);
-
-        if (proceduralRoom != null)
-        {
-            foreach (var c in roomPositions)
-            {
-                proceduralRoom.Build(c);
-            }
-        }
-        else
-            Debug.LogWarning("[GraphManager] ProceduralMap não atribuído no Inspector.");
-
-        for (int i = 0; i < numberOfFloors; i++)
-        {
-            floorsPositions.Add(floorsHeight * i);
+            buildRooms.Build(n.transform.position);
         }
     }
 
